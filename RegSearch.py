@@ -1,17 +1,19 @@
 #! python3
 # this program searches all the files in a specified directory and picks out the specified pattern
-# Usage: RegSearch <absolute directory path> <Pattern> (Custom pattern not implemented yet, only phone numbers)
-#WIP
+# Usage: RegSearch <absolute directory path> <Pattern>
 
 import os, sys, pyperclip, re
+from unipath import Path
 
-#path = sys.argv[1]
+path = sys.argv[1]
+savepath = Path(path)
+newpath = savepath.parent
+# checks if the path is valid
+if not(os.path.exists(path)):
+    print("Error path does not exist!")
+    sys.exit(1)
 
-#if not(os.path.exists(path)):
- #   print("Error path does not exist!")
-  #  sys.exit(1)
-
-
+# regex for phone
 regexPhone = re.compile(r'''((\d{3} | \(\d{3}\))?  #area code (optional)
 (\s|-|\.)?                                    #space divider (optional)
 (\d{3})                                       #middle 3 numbers
@@ -19,6 +21,7 @@ regexPhone = re.compile(r'''((\d{3} | \(\d{3}\))?  #area code (optional)
 (\d{4})                                       #last 4 numbers
 )''', re.VERBOSE)
 
+#regex for email
 regexEmail = re.compile(r'''(
     [a-zA-Z0-9._%+-]+
     @
@@ -26,29 +29,33 @@ regexEmail = re.compile(r'''(
     (\.[a-zA-Z]{2,4})
     )''', re.VERBOSE)
 
-#find matches in clipboard text
-text = str(pyperclip.paste())
-
 matches = []
 
-f=open("matched.txt", "w");
+# creates the file inside the directory to be walked
 
-for groups in regexPhone.findall(text):
-    phoneNum = '-'.join([groups[1],groups[3],groups[5]])
-    if groups[5] != '':
-        phoneNum += ' x' + groups[5]
-    matches.append(phoneNum)
-for groups in regexEmail.findall(text):
-    matches.append(groups[0])
+f=open(newpath+"\\results.txt", "w")
 
-#copy results to the clipboard
+#walks through the given directory
+for(dirpath, dirnames, filenames) in os.walk(path):
+    for filename in filenames:
+        if filename.endswith('.txt'): # looks for txt files
+            file = open(os.path.join(path,dirpath,filename), 'r').read()
+            pyperclip.copy(file)
+            # scans text files for the regex search
+            for groups in regexPhone.findall(pyperclip.paste()):
+                phoneNum = '-'.join([groups[1],groups[3],groups[5]])
+                matches.append(phoneNum)
+            for groups in regexEmail.findall(pyperclip.paste()):
+                matches.append(groups[0])
+
+# copy results to the clipboard and writes to the result.txt file
 
 if len(matches) > 0:
     pyperclip.copy('\n'.join(matches))
-    print('copied to clipboard:')
+    print('copied to clipboard and written to file:' + newpath +"\\results.txt: ")
     print('\n'.join(matches))
     f.write(pyperclip.paste())
 else:
-    print('No phone numbers or email addresses foind')
+    print('No phone numbers or email addresses found')
 
 f.close()
