@@ -2,9 +2,11 @@
 # this program searches all the files in a specified directory and picks out the specified pattern
 # Usage: RegSearch <absolute directory path> <Pattern>
 
-import os, sys, pyperclip, re
+import os, sys, pyperclip, re, PyPDF2, docx2txt
 from unipath import Path
+from docx import Document
 
+matches = []
 path = sys.argv[1]
 savepath = Path(path)
 newpath = savepath.parent
@@ -29,7 +31,25 @@ regexEmail = re.compile(r'''(
     (\.[a-zA-Z]{2,4})
     )''', re.VERBOSE)
 
-matches = []
+
+def getText(fname):
+    doc = Document(fname)
+    fullText= []
+    for para in doc.paragraphs:
+        fullText.append(para.text)
+    return '\n'.join(fullText)
+
+
+if(len(sys.argv) < 3):
+    print("Enter in the pattern you want to search for(Not Working Yet):")
+    CusPattern = input()
+    Search = re.compile(CusPattern)
+elif(sys.argv[2] == 'email'):
+    Search = regexEmail
+elif(sys.argv[2] == 'phone'):
+    Search = regexPhone
+
+
 
 # creates the file inside the directory to be walked
 
@@ -42,10 +62,22 @@ for(dirpath, dirnames, filenames) in os.walk(path):
             file = open(os.path.join(path,dirpath,filename), 'r').read()
             pyperclip.copy(file)
             # scans text files for the regex search
-            for groups in regexPhone.findall(pyperclip.paste()):
+            for groups in Search.findall(pyperclip.paste()):
                 phoneNum = '-'.join([groups[1],groups[3],groups[5]])
                 matches.append(phoneNum)
-            for groups in regexEmail.findall(pyperclip.paste()):
+            for groups in Search.findall(pyperclip.paste()):
+                matches.append(groups[0])
+        if filename.endswith('.pdf') and  filename.isEncryptec() == False: # looks for pdf files
+            print("Hello")
+
+        if filename.endswith('.docx'): # looks for docx files
+            text = docx2txt.process(os.path.join(path,dirpath,filename))
+            pyperclip.copy(text)
+                #scans text for regex search
+            for groups in Search.findall(pyperclip.paste()):
+                phoneNum = '-'.join([groups[1], groups[3], groups[5]])
+                matches.append(phoneNum)
+            for groups in Search.findall(pyperclip.paste()):
                 matches.append(groups[0])
 
 # copy results to the clipboard and writes to the result.txt file
