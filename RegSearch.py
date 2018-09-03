@@ -72,9 +72,6 @@ def convert_pdf_to_txt(path):
 #function to scan text against regSearches
 def regSearch(text):
     for groups in Search.findall(text):
-        phoneNum = '-'.join([groups[1], groups[3], groups[5]])
-        matches.append(phoneNum)
-    for groups in Search.findall(text):
         matches.append(groups[0])
 
 # creates the file inside the directory to be walked
