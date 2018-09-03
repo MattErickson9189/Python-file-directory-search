@@ -12,6 +12,9 @@ from io import StringIO
 
 
 matches = []
+txt = 0
+word = 0
+pdf = 0
 path = sys.argv[1]
 savepath = Path(path)
 newpath = savepath.parent
@@ -37,7 +40,7 @@ regexEmail = re.compile(r'''(
     )''', re.VERBOSE)
 
 if(len(sys.argv) < 3):
-    print("Enter in the pattern you want to search for(Not Working Yet):")
+    print("Enter in the pattern you want to search for:")
     CusPattern = input()
     Search = re.compile(CusPattern)
 elif(sys.argv[2] == 'email'):
@@ -82,17 +85,20 @@ f=open(newpath+"\\results.txt", "w")
 for(dirpath, dirnames, filenames) in os.walk(path):
     for filename in filenames:
         if filename.endswith('.txt'): # looks for txt files
+            txt += 1
             file = open(os.path.join(path,dirpath,filename), 'r').read()
             pyperclip.copy(file)
             # scans text files for the regex search
             regSearch(pyperclip.paste())
 
         if filename.endswith('.pdf'): # looks for pdf files
+            pdf += 1
             convert_pdf_to_txt(os.path.join(path,dirpath,filename))
             # scans text for regex search
             regSearch(pyperclip.paste())
 
         if filename.endswith('.docx'): # looks for docx files
+            word += 1
             text = docx2txt.process(os.path.join(path,dirpath,filename))
             pyperclip.copy(text)
                 #scans text for regex search
@@ -103,6 +109,7 @@ for(dirpath, dirnames, filenames) in os.walk(path):
 if len(matches) > 0:
     pyperclip.copy('\n'.join(matches))
     print('copied to clipboard and written to file:' + newpath +"\\results.txt: ")
+    print( '\n%d .txt files scanned\n%d .docx files scanned\n%d .pdf files scanned\n' % (txt,word,pdf))
     print('\n'.join(matches))
     f.write(pyperclip.paste())
 else:
