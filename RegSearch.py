@@ -4,7 +4,7 @@
 
 import os, sys, pyperclip, re, PyPDF2, docx2txt
 from unipath import Path
-from docx import Document
+
 
 matches = []
 path = sys.argv[1]
@@ -30,15 +30,6 @@ regexEmail = re.compile(r'''(
     [a-zA-Z0-9.-]+
     (\.[a-zA-Z]{2,4})
     )''', re.VERBOSE)
-
-
-def getText(fname):
-    doc = Document(fname)
-    fullText= []
-    for para in doc.paragraphs:
-        fullText.append(para.text)
-    return '\n'.join(fullText)
-
 
 if(len(sys.argv) < 3):
     print("Enter in the pattern you want to search for(Not Working Yet):")
