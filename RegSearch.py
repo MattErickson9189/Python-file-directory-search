@@ -110,9 +110,11 @@ if len(matches) > 0:
     pyperclip.copy('\n'.join(matches))
     print('copied to clipboard and written to file:' + newpath +"\\results.txt: ")
     print( '\n%d .txt files scanned\n%d .docx files scanned\n%d .pdf files scanned\n' % (txt,word,pdf))
-    print('\n'.join(matches))
+    print('Opening File')
     f.write(pyperclip.paste())
 else:
     print('No phone numbers or email addresses found')
 
 f.close()
+
+os.startfile(newpath+"\\results.txt")
